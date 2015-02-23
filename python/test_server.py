@@ -1,4 +1,5 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from contextlib import closing
 import MySQLdb as mysql
 import random
 import time
@@ -22,43 +23,41 @@ class datastoreHandler:
 					  url_unique VARCHAR(2084) NOT NULL, \
 					  datetime DATETIME NOT NULL, \
 					  PRIMARY KEY (p_id))"
-			c = self.dbConn.cursor()
-			c.execute(create)
-			c.close()
+			with closing(self.dbConn.cursor()) as c:
+				c.execute(create)
+				self.dbConn.commit()
 
 			stmt = "INSERT INTO images (url_unique, datetime) VALUES (%s, %s)"
 			# DEBUG(jsalem)
 			# print "======="
 			# print stmt
 			# print "======="
-			c = self.dbConn.cursor()
-			c.execute(stmt, (imageurl, datetime))
-			c.close()
-			self.dbConn.commit()
+			with closing(self.dbConn.cursor()) as c:
+				c.execute(stmt, (imageurl, datetime))
+				self.dbConn.commit()
 		return
 
 	def getLongestUrl (self):
 		qry = "SELECT url_unique FROM images ORDER BY length(url_unique) DESC LIMIT 1"
-		c = self.dbConn.cursor()
-		c.execute(qry)
-		ret = c.fetchone()
-		c.close()
+		with closing(self.dbConn.cursor()) as c:
+			c.execute(qry)
+			ret = c.fetchone()
+
 		return ret[0]
 
 	def getRandomUrl (self):
 		# get num of records
 		count_stmt = "SELECT COUNT(url_unique) FROM images"
-		c = self.dbConn.cursor()
-		c.execute(count_stmt)
-		count = c.fetchone()
-		c.close()
+		with closing(self.dbConn.cursor()) as c:
+			c.execute(count_stmt)
+			count = c.fetchone()
 
 		rand = random.randint(1,count[0])
 		rand_stmt = "SELECT url_unique FROM images WHERE p_id <= %s AND p_id >= %s"
-		c = self.dbConn.cursor()
-		c.execute(rand_stmt, (rand, rand))
-		ret = c.fetchone()
-		c.close()
+		with closing(self.dbConn.cursor()) as c:
+			c.execute(rand_stmt, (rand, rand))
+			ret = c.fetchone()
+			
 		return ret[0]
 
 
