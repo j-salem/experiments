@@ -26,13 +26,13 @@ class datastoreHandler:
 			c.execute(create)
 			c.close()
 
-			stmt = "INSERT INTO images (url_unique, datetime) VALUES ('%s', '%s')" % (imageurl, datetime)
+			stmt = "INSERT INTO images (url_unique, datetime) VALUES (%s, %s)"
 			# DEBUG(jsalem)
 			# print "======="
 			# print stmt
 			# print "======="
 			c = self.dbConn.cursor()
-			c.execute(stmt)
+			c.execute(stmt, (imageurl, datetime))
 			c.close()
 			self.dbConn.commit()
 		return
@@ -54,9 +54,9 @@ class datastoreHandler:
 		c.close()
 
 		rand = random.randint(1,count[0])
-		rand_stmt = "SELECT url_unique FROM images WHERE p_id <= %d AND p_id >= %d" % (rand, rand)
+		rand_stmt = "SELECT url_unique FROM images WHERE p_id <= %s AND p_id >= %s"
 		c = self.dbConn.cursor()
-		c.execute(rand_stmt)
+		c.execute(rand_stmt, (rand, rand))
 		ret = c.fetchone()
 		c.close()
 		return ret[0]
