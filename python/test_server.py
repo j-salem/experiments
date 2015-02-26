@@ -46,18 +46,16 @@ class datastoreHandler:
 		return ret[0]
 
 	def getRandomUrl (self):
-		# get num of records
-		count_stmt = "SELECT COUNT(url_unique) FROM images"
+		# derived from example found here: http://jan.kneschke.de/projects/mysql/order-by-rand/
+		rand_stmt = "SELECT url_unique FROM images as u1 JOIN \
+					 (SELECT (RAND() * (SELECT MAX(p_id) FROM images)) AS p_id) AS u2 \
+					 WHERE u1.p_id >= u2.p_id \
+					 ORDER BY u1.p_id ASC \
+					 LIMIT 1"
 		with closing(self.dbConn.cursor()) as c:
-			c.execute(count_stmt)
-			count = c.fetchone()
-
-		rand = random.randint(1,count[0])
-		rand_stmt = "SELECT url_unique FROM images WHERE p_id <= %s AND p_id >= %s"
-		with closing(self.dbConn.cursor()) as c:
-			c.execute(rand_stmt, (rand, rand))
+			c.execute(rand_stmt)
 			ret = c.fetchone()
-			
+
 		return ret[0]
 
 
